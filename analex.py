@@ -1,4 +1,3 @@
-# from automata.fa.Moore import Moore
 import sys, os
 
 from myerror import MyError
@@ -8,77 +7,52 @@ error_handler = MyError('LexerErrors')
 global check_cm
 global check_key
 
-# moore = Moore(['q0', 'q1', 'q2', 'q3', 'q4'],
-#               ['i' , 'n' , 't', ' '],
-#               ['INT', 'ELSE'],
-#               {
-#                   'q0' : {
-#                       'i' : 'q1',
-#                   },
-#                   'q1': {
-#                       'n': 'q2',
-#                   },
-#                   'q2': {
-#                       't': 'q3',
-
-#                   },
-#                   'q3': {
-#                       '\n': 'q4',
-#                   }
-#               },
-
-#               'q0',
-#               {
-#                   'q0' : '',
-#                   'q1' : '',
-#                   'q2' : '',
-#                   'q3' : '',
-#                   'q4' : 'INT'
-#               }
-#               )
-
 def main():
     check_cm = False
     check_key = False
-    
-    for idx, arg in enumerate(sys.argv):
-        # print("Argument #{} is {}".format(idx, arg))
-        aux = arg.split('.')
-        if aux[-1] == 'cm':
-            check_cm = True
-            idx_cm = idx
+    idx_cm = 1
+    # python analex.py file.cm
 
-        if(arg == "-k"):
-            check_key = True
-    
-    # print ("No. of arguments passed is ", len(sys.argv))
+    numargs = len(sys.argv)
+    if "-k" in sys.argv:
+        numargs-=1
+        check_key = True
 
-    if(len(sys.argv) < 3):
+    if(numargs < 2):
         raise TypeError(error_handler.newError(check_key, 'ERR-LEX-USE'))
+    
+    arq_fonte = sys.argv[1]
+    if arq_fonte.split(".")[-1] == "cm":
+        check_cm = True
 
     if not check_cm:
-      raise IOError(error_handler.newError(check_key, 'ERR-LEX-NOT-CM'))
-    elif not os.path.exists(sys.argv[idx_cm]):
-        raise IOError(error_handler.newError(check_key, 'ERR-LEX-FILE-NOT-EXISTS'))
-    else:
-        data = open(sys.argv[idx_cm])
-        source_file = data.read()
+        raise IOError(error_handler.newError(check_key, 'ERR-LEX-NOT-CM'))  
 
-        if not check_cm:
-            print("Definição da Máquina")
-            print(moore)
-            print("Entrada:")
-            print(source_file)
-            print("Lista de Tokens:")
-        
-        #print(moore.get_output_from_string(source_file))
+    if not os.path.exists(sys.argv[idx_cm]):
+        raise IOError(error_handler.newError(check_key, 'ERR-LEX-FILE-NOT-EXISTS'))  
 
+    from lexer import Lexer, MooreMachine
+    from cm_moore import moore_transitions, moore_recover, moore_output
+
+    moore = MooreMachine(moore_transitions, moore_recover, moore_output)
+    cmlexer = Lexer(moore, quiet=check_key)
+
+    data = open(sys.argv[idx_cm])
+    source_file = data.read().lower()
+
+    if not check_key:
+        print("Definição da Máquina")
+        print(moore)
+        print("Entrada:")
+        print(source_file)
+        print("Lista de Tokens:")
+    
+    _ = cmlexer.run(source_file, print_output=True)
+    
 
 if __name__ == "__main__":
 
     try:
         main()
-    except Exception as e:
-        print(e)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, IOError) as e:
         print(e)

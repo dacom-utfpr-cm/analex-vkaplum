@@ -17,7 +17,8 @@ def test_execute(input_file, args):
     else:
         path_file = ""
     
-    cmd = "python analex.py {0} {1}".format(args, path_file)
+    cmd = "python analex.py {0} {1}".format(path_file, args)
+    print(cmd)
     process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     stdout, stderr = process.communicate()
@@ -36,5 +37,5 @@ def test_execute(input_file, args):
     print("Expected output:")
     print(expected_output)
 
-    assert stdout.decode("utf-8").strip() == expected_output.strip()
+    assert stdout.decode("utf-8").strip().replace("\r", "") == expected_output.strip()
 
