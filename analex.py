@@ -38,7 +38,7 @@ def main():
     cmlexer = Lexer(moore, quiet=check_key)
 
     data = open(sys.argv[idx_cm])
-    source_file = data.read()
+    source_file = data.read().lower()
 
     if not check_key:
         print("Definição da Máquina")
